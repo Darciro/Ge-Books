@@ -1,0 +1,31 @@
+{
+  "manifest_version": 2,
+
+  "name": "Galdar eBook",
+  "description": "TODO",
+  "version": "1.0",
+
+  "background": {
+      "persistent": false,
+      "scripts": ["assets/js/background.js"]
+  },
+
+  "browser_action": {
+    "default_title": "Galdar eBook",
+    "default_icon": "assets/img/icon.png",
+    "default_popup": "popup.html"
+  },
+
+  "permissions": [
+    "activeTab",
+    "https://ajax.googleapis.com/",
+    "storage",
+    "unlimitedStorage"
+  ],
+
+  "options_ui": {
+      "page": "options.html",
+      "chrome_style": true,
+      "open_in_tab": true
+    }
+}
