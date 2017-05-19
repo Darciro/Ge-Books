@@ -121,10 +121,11 @@
 	<div id="upload-modal" class="modal modal-fixed-footer">
 		<div class="modal-content">
 			<h4>Select your file</h4>
-			<form id="send-epub-form" action="#">
+			<form id="send-epub-form" enctype="multipart/form-data" action="/ge-books">
 				<div class="file-field input-field">
 					<div class="btn">
 						<span>File</span>
+						<!-- <input id="ebub-file" type="file" webkitdirectory directory multiple> -->
 						<input id="ebub-file" type="file">
 					</div>
 					<div class="file-path-wrapper">
