@@ -27,36 +27,34 @@ var app,
  */
 function restoreGeBookPage() {
 	// Clear all data synced
-	 /*chrome.storage.sync.clear(function() {
+	/*
+	chrome.storage.sync.clear(function() {
 	    var error = chrome.runtime.lastError;
 	    if (error) {
 	        console.error(error);
 	    }
-	}); */ 
+	}); 
+	*/ 
 
-	chrome.storage.sync.get(function(dataRetrieved) {
-		console.log('Raw data', dataRetrieved);
-		savedData = dataRetrieved;
+	// chrome.storage.sync.get(function(dataRetrieved) {
+	chrome.storage.sync.get('geBookData', function(dataRetrieved) {
+		// console.log('Raw data', dataRetrieved);
+		if ( dataRetrieved.geBookData ){
+			savedData = dataRetrieved.geBookData;
+		} else {
+			savedData = [];
+		}
 		/*if( dataRetrieved.savedData ){
 			console.log('dataRetrieved', dataRetrieved.savedData);
 			getCurrentPage = dataRetrieved.savedData.lastPage;
 		} else {
 			console.log('dataRetrieved empty');;
 		}*/
+		startApplication();
 	});
 }
+restoreGeBookPage();
 
-/**
- * Wait until the document is ready to rock and start application
- * 
- * @return {Void}
- */
-document.onreadystatechange = function () {
-	if (document.readyState == "complete") {
-		restoreGeBookPage();
-		startApplication();
-    }
-};
 
 /**
  * The application main features
@@ -69,6 +67,7 @@ function startApplication () {
 	        init: function () {
 	        	// @TODO - REMOVER
 	            console.info('Initializing application');
+	            console.log('Restored data:', savedData);
 
 	            EPUBJS.filePath = chrome.runtime.getURL('options.html').replace('options.html', '') + 'assets/js/';
 	            EPUBJS.cssPath = chrome.runtime.getURL('options.html').replace('options.html', '') + 'assets/css/';
@@ -76,6 +75,11 @@ function startApplication () {
 
 	            utils.helpers();
 	            app.geBookFileSwitcher();
+	            app.welcomeInterface();
+	        },
+
+	        welcomeInterface: function () {
+	        	// body...
 	        },
 
 	        geBookFileSwitcher: function () {
@@ -150,6 +154,11 @@ function startApplication () {
     					$('#toc-wrapper').append(tocRow);
     				});
     			});
+
+    			$(document).on('click', '.toc-link', function(e){
+    				e.preventDefault();
+    				Book.displayChapter($(this).attr('href'));
+    			})
 	        },
 
 	        generateGebookPagination: function (Book) {
@@ -159,7 +168,7 @@ function startApplication () {
     			});
 
     			Book.on('book:pageChanged', function(location){
-    			    // console.log( 'pageChanged', location );
+    			    console.log( 'pageChanged', location );
     			    if(!mouseDown) {
     			    	slider.value = location.anchorPage;
     			    }
@@ -208,15 +217,19 @@ function startApplication () {
     	            	currentPage.value = curPage;
     	            	utils.calculatePercentageComplete( curPage, Book.pagination.totalPages );
     	            	$('#progress-bar').hide();
-    	            	$('#ge-book-wrapper').removeClass('hide');
-    	            	console.log('Book rendered');
+    	            	$('#ge-book-wrapper, #ge-book-name-wrapper').removeClass('hide');
+    	            	$('#ge-book-welcome').addClass('hide');
+    	            	console.log('Book rendered', savedData.length);
+    	            	// if( Object.getOwnPropertyNames(savedData).length ){
     	            	if( savedData.length ){
-    	            		console.log('Options saved, searching book');
+    	            		console.log('Options found, searching for book');
 	            	    	for(var i = 0; i < savedData.length; i++) {
 	            	    		if( savedData[i].geBookName === $('#ge-book-name').text() ) {
 	            	    			console.log('Book found, loading page');
-	            	    			Book.displayChapter(Book.getCurrentLocationCfi());
-	            	    		} 
+	            	    			Book.displayChapter( savedData[i].lastPage );
+	            	    		}else{
+	            	    			console.log('Book not found, loading first page');
+	            	    		}
 	            	    	}
 	            	    } else {
 	            	    	console.log('Options not found');
@@ -259,15 +272,16 @@ function startApplication () {
 
 			saveGebookData: function (data) {
 				console.log('data to saveGebookData', data);
+				// if( Object.getOwnPropertyNames(savedData).length ){
 				if( savedData.length ){
 					for(var i = 0; i < savedData.length; i++) {
 						console.log('savedData', savedData);
-						if( savedData[i].geBookName === data.geBookName ) {
+						if( savedData[i].geBookName == data.geBookName ) {
 							console.log('gebook found!', data.geBookName);
 							savedData[i].lastPage = data.lastPage;
-
+							// savedData.push(data);
 							chrome.storage.sync.set({
-								geBookData: savedData
+								'geBookData': savedData
 							}, function() {
 								console.log( 'geBookData updated: ', savedData );
 							});
@@ -280,14 +294,19 @@ function startApplication () {
 					}
 				} else {
 					savedData.push(data);
+					chrome.storage.sync.set({
+						'geBookData': savedData
+					}, function() {
+						console.log( 'geBookData saved!' );
+					});
 				}
 
 
-				chrome.storage.sync.set({
+				/*chrome.storage.sync.set({
 					geBookData: savedData
 				}, function() {
 					console.log( 'geBookData: ', savedData );
-				});
+				});*/
 			}
         }
 	})(jQuery);
@@ -297,5 +316,7 @@ function startApplication () {
 	 * 
 	 * @return {Void}
 	 */
-	app.init();
+	$(document).ready(function () {
+    	app.init();
+    });
 }

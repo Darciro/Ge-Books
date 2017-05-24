@@ -815,3 +815,23 @@ input:-ms-placeholder {
 .icon-columns:before { content: '\e810'; } /* '' */
 .icon-list:before { content: '\e800'; } /* '' */
 .icon-resize-small:before { content: '\e808'; } /* '' */
+
+#ge-book-popup{
+    width: 400px;
+}
+
+#ge-book-popup > .row{
+    margin-bottom: 0;
+}
+
+#ge-book-name-wrapper{
+  float: right;
+}
+
+#upload-modal{
+  max-height: 310px;
+}
+
+#send-epub-form button[type="submit"]{
+    background-color: #009688 !important;
+}

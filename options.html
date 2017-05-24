@@ -25,7 +25,7 @@
 	<nav class="blue-grey darken-4" role="navigation">
 		<div class="nav-wrapper container">
 			<a id="logo-container" href="#" class="brand-logo">Galdar eBook</a>
-			<a href="#" style="float: right;">Você está lendo: <span id="ge-book-name">GeBook.epub</span></a>
+			<a href="#" id="ge-book-name-wrapper" class="hide">Você está lendo: <span id="ge-book-name">GeBook.epub</span></a>
 		</div>
 	</nav>
 
@@ -50,7 +50,7 @@
 		<div class="indeterminate"></div>
 	</div>
 
-	<div class="section no-pad-bot" id="index-banner">
+	<div class="section no-pad-bot" id="content">
 		<div class="container">
 			<div id="ge-book-wrapper" class="row center hide">
 
@@ -73,6 +73,16 @@
 					<a href="#" id="ge-book-next" class="page-nav teal-text text-lighten-1">
 						<i class="material-icons">chevron_right</i>
 					</a>
+				</div>
+			</div>
+
+			<div id="ge-book-welcome" class="row center">
+				<h1 class="header center teal-text">Welcome to Galdar eBook!</h1>
+				<div class="row center">
+					<h5 class="header col s12 light">To start, select your digital book (.epub format!), in the button below.</h5>
+				</div>
+				<div class="row center">
+					<a href="#upload-modal" class="btn-large waves-effect waves-light teal">Get Started</a>
 				</div>
 			</div>
 			<br><br>
@@ -120,25 +130,27 @@
 
 	<div id="upload-modal" class="modal modal-fixed-footer">
 		<div class="modal-content">
-			<h4>Select your file</h4>
+			<h4>Select your book</h4>
+			<br><br>
 			<form id="send-epub-form" enctype="multipart/form-data" action="/ge-books">
 				<div class="file-field input-field">
 					<div class="btn">
-						<span>File</span>
-						<!-- <input id="ebub-file" type="file" webkitdirectory directory multiple> -->
+						<span>ePub File</span>
 						<input id="ebub-file" type="file">
 					</div>
 					<div class="file-path-wrapper">
 						<input class="file-path validate" type="text">
 					</div>
 				</div>
-				<button class="btn waves-effect waves-light" type="submit" name="action">Submit
-				    <i class="material-icons right">send</i>
-			  	</button>
+				<div class="right-align">
+					<button style="background-color: #009688 !important;" class="btn waves-effect waves-light teal" type="submit" name="action">Start reading!
+					    <i class="material-icons right">send</i>
+				  	</button>
+			  	</div>
 			</form>
 		</div>
 		<div class="modal-footer">
-			<a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat">Fechar</a>
+			<a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat">Cancel</a>
 		</div>
 	</div>
 
