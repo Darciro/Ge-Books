@@ -20,7 +20,8 @@
     "activeTab",
     "https://ajax.googleapis.com/",
     "storage",
-    "unlimitedStorage"
+    "unlimitedStorage",
+    "http://192.241.173.116/"
   ],
 
   "options_ui": {

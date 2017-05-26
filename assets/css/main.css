@@ -835,3 +835,7 @@ input:-ms-placeholder {
 #send-epub-form button[type="submit"]{
     background-color: #009688 !important;
 }
+
+body{
+  font-size: 100% !important;
+}

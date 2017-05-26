@@ -30,23 +30,27 @@
 	</nav>
 
 	<ul id="slide-out" class="side-nav">
-		<li><div class="userView">
-			<div class="background">
-				<img src="images/office.jpg">
+		<li>
+			<div class="userView" style="height: 200px;">
+				<div class="background">
+					<img src="assets/img/logo-galdar.png" style="width: 100%;">
+				</div>
+				<!-- <a href="#!user"><img class="circle" src="images/yuna.jpg"></a> -->
+				<!-- <a href="#!name"><span class="name">John Doe</span></a>
+				<a href="#!email"><span class="email">jdandturk@gmail.com</span></a> -->
 			</div>
-			<a href="#!user"><img class="circle" src="images/yuna.jpg"></a>
-			<a href="#!name"><span class="white-text name">John Doe</span></a>
-			<a href="#!email"><span class="white-text email">jdandturk@gmail.com</span></a>
-		</div></li>
-		<li><a href="#!"><i class="material-icons">cloud</i>First Link With Icon</a></li>
-		<li><a href="#!">Second Link</a></li>
+		</li>
+		<li><a href="#!"><i class="material-icons">info</i>About Ge-Books</a></li>
+		<li><a href="#!"><i class="material-icons">cloud</i>My books saved</a></li>
+		<li><a href="#clear-data-modal"><i class="material-icons">delete_forever</i>Clear all my data</a></li>
+		<!-- <li><a href="#!">Second Link</a></li>
 		<li><div class="divider"></div></li>
 		<li><a class="subheader">Subheader</a></li>
 		<li><a class="waves-effect" href="#!">Third Link With Waves</a></li>
-		<li><a class="waves-effect" href="#!">Fourth Link With Waves</a></li>
+		<li><a class="waves-effect" href="#!">Excluir meus dados</a></li> -->
 	</ul>
 
-	<div id="progress-bar" class="progress">
+	<div id="progress-bar" class="progress hide">
 		<div class="indeterminate"></div>
 	</div>
 
@@ -111,7 +115,7 @@
 				</a>
 			</li>
 			<li>
-				<a class="btn-floating blue" title="Browse eBooks">
+				<a class="btn-floating blue" title="Browse eBooks" href="#browse-books-modal">
 					<i class="material-icons">search</i>
 				</a>
 			</li>
@@ -132,11 +136,11 @@
 		<div class="modal-content">
 			<h4>Select your book</h4>
 			<br><br>
-			<form id="send-epub-form" enctype="multipart/form-data" action="/ge-books">
+			<form id="send-epub-form" action="#" method="POST">
 				<div class="file-field input-field">
 					<div class="btn">
 						<span>ePub File</span>
-						<input id="ebub-file" type="file">
+						<input id="ebub-file" name="file" type="file" accept=".epub">
 					</div>
 					<div class="file-path-wrapper">
 						<input class="file-path validate" type="text">
@@ -151,6 +155,27 @@
 		</div>
 		<div class="modal-footer">
 			<a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat">Cancel</a>
+		</div>
+	</div>
+
+	<div id="clear-data-modal" class="modal">
+		<div class="modal-content">
+			<h4>Clear All data?</h4>
+			<p>All your books, saved options, and stuff will be wiped-out, and also, you gonna make me cry a river. Are you sure? This action cannot be undone!</p>
+		</div>
+		<div class="modal-footer">
+			<a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat">Disagree</a>
+			<a href="#!" id="clear-ge-books-data" class="modal-action modal-close waves-effect waves-green btn-flat ">Agree</a>
+		</div>
+	</div>
+
+	<div id="browse-books-modal" class="modal modal-fixed-footer">
+		<div class="modal-content">
+			<h4>My Ge-Books</h4>
+			<div id="my-ge-books-wrapper" class="collection"></div>
+		</div>
+		<div class="modal-footer">
+			<a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat">Fechar</a>
 		</div>
 	</div>
 

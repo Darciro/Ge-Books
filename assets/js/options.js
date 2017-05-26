@@ -5,6 +5,8 @@
   */
 var app, 
 	utils,
+	api,
+	userID,
 	getCurrentPage,
 	savedData 		= [], 
 	sendGbookForm 	= document.getElementById('send-epub-form'),
@@ -25,35 +27,53 @@ var app,
  * 
  * @return {Object}
  */
-function restoreGeBookPage() {
-	// Clear all data synced
-	/*
-	chrome.storage.sync.clear(function() {
-	    var error = chrome.runtime.lastError;
-	    if (error) {
-	        console.error(error);
+function restoreGeBookData() {
+	/*chrome.storage.sync.get('userid', function(items) {
+	    var userid = items.userid;
+	    if (userid) {
+	        useToken(userid);
+	    } else {
+	        userid = getRandomToken();
+	        chrome.storage.sync.set({userid: userid}, function() {
+	            useToken(userid);
+	        });
 	    }
-	}); 
-	*/ 
+	    function useToken(userid) {
+	        // TODO: Use user id for authentication or whatever you want.
+	    }
+	});*/
+	// Great idea from: https://stackoverflow.com/questions/23822170/getting-unique-clientid-from-chrome-extension#answer-23854032
+	function generateTokenID() {
+	    // E.g. 8 * 32 = 256 bits token
+	    var randomPool = new Uint8Array(32);
+	    crypto.getRandomValues(randomPool);
+	    var hex = '';
+	    for (var i = 0; i < randomPool.length; ++i) {
+	        hex += randomPool[i].toString(16);
+	    }
+	    // E.g. db18458e2782b2b77e36769c569e263a53885a9944dd0a861e5064eac16f1a
+	    return hex;
+	}
 
-	// chrome.storage.sync.get(function(dataRetrieved) {
-	chrome.storage.sync.get('geBookData', function(dataRetrieved) {
-		// console.log('Raw data', dataRetrieved);
+	chrome.storage.sync.get(function(dataRetrieved) {
+		console.log('Raw data', dataRetrieved);
+		userID = dataRetrieved.userID;
+		if( !userID ){
+			userID = generateTokenID();
+	        chrome.storage.sync.set({'userID': userID}, function() {
+	            // useToken(userid);
+	        });
+		}
+
 		if ( dataRetrieved.geBookData ){
 			savedData = dataRetrieved.geBookData;
 		} else {
 			savedData = [];
 		}
-		/*if( dataRetrieved.savedData ){
-			console.log('dataRetrieved', dataRetrieved.savedData);
-			getCurrentPage = dataRetrieved.savedData.lastPage;
-		} else {
-			console.log('dataRetrieved empty');;
-		}*/
 		startApplication();
 	});
 }
-restoreGeBookPage();
+restoreGeBookData();
 
 
 /**
@@ -74,8 +94,10 @@ function startApplication () {
 
 
 	            utils.helpers();
+	            utils.clearAllData();
 	            app.geBookFileSwitcher();
 	            app.welcomeInterface();
+	            app.getMyGeBooks();
 	        },
 
 	        welcomeInterface: function () {
@@ -85,20 +107,24 @@ function startApplication () {
 	        geBookFileSwitcher: function () {
 	        	$(sendGbookForm).on('submit', function(e){
 			    	e.preventDefault();
+			    	$('#ge-book-welcome').addClass('hide');
+			    	$('#ge-book-wrapper').addClass('hide');
+			    	$('#progress-bar').removeClass('hide');
 
 			        var file_name = $('#ebub-file').val(),
 			        	file_data = $('#ebub-file').prop('files')[0],
-			        	form_data = new FormData(),
+			        	formData = new FormData(),
 			        	extension = file_name.replace(/^.*\./, '');
-			        
-			        	form_data.append(file_name, file_data);
-			        
-			        // console.log( file_name, form_data, file_data )
+
+			        	formData.append('file', file_data);
+			        	formData.append('userID', userID);
 
 			        if( extension === 'epub' ){
 			    		console.log('Sending file_name...', file_name);
-			    		console.log('Sending form_data...', form_data);
+			    		console.log('Sending formData...', formData);
 			    		console.log('Sending file_data...', file_data);
+
+			    		api.sendGeBook(formData);
 
 			    		if (window.FileReader) {
 			                var reader = new FileReader();
@@ -134,7 +160,7 @@ function startApplication () {
 	        	app.getGebookMetadata(Book);
 	        	app.generateGebookToc(Book);
 	        	app.generateGebookPagination(Book);
-	        	app.geBooPagination(Book);
+	        	app.geBookPagination(Book);
 	        	app.showGebookReady(Book);
 	        },
 
@@ -216,7 +242,7 @@ function startApplication () {
     	            	slider.value = curPage;
     	            	currentPage.value = curPage;
     	            	utils.calculatePercentageComplete( curPage, Book.pagination.totalPages );
-    	            	$('#progress-bar').hide();
+    	            	$('#progress-bar').addClass('hide');
     	            	$('#ge-book-wrapper, #ge-book-name-wrapper').removeClass('hide');
     	            	$('#ge-book-welcome').addClass('hide');
     	            	console.log('Book rendered', savedData.length);
@@ -244,7 +270,7 @@ function startApplication () {
     	        });
 	        },
 
-	        geBooPagination: function (Book) {
+	        geBookPagination: function (Book) {
 	        	$(geBookPrevPage).on('click', function(e) {
 	        		e.preventDefault();
 	        		Book.prevPage();
@@ -254,7 +280,63 @@ function startApplication () {
 	        		e.preventDefault();
 	        		Book.nextPage();
 	        	});
-	        }
+	        },
+
+	        getMyGeBooks: function (Book) {
+	        	$.ajax({
+                    url: 'http://192.241.173.116/projetos/ge-books/my-gebooks.php',
+                    // dataType: 'json',
+                    data: {userID: userID},
+                    type: 'GET',
+                    /*beforeSend: function(php_script_response){
+                    	
+                    },*/
+                    success: function(booksData){
+                    	booksData = JSON.parse(booksData);
+                    	console.log(booksData);
+                    	$('#my-ge-books-wrapper').html('');
+                    	$.each(booksData.geBooks, function(key, book){
+                    		var bookRow = '<a href="' + book.path + '" class="collection-item saved-book-link modal-close">'+ book.name +'</a>';
+	    					$('#my-ge-books-wrapper').append(bookRow);
+                    	});
+                    },
+                    error: function(error){
+                    	console.error( 'Error: ' + error.responseText );
+                    	console.error( 'Full stack: ', error );
+                	}
+             	});
+
+             	$(document).on('click', '.saved-book-link', function(e){
+             		e.preventDefault();
+             		app.openSavedGeBook($(this).attr('href'));
+             	})
+	        },
+
+            openSavedGeBook: function (pathToBook) {
+        		$('#ge-book-welcome').addClass('hide');
+        		$('#ge-book-wrapper').addClass('hide');
+        		$('#progress-bar').removeClass('hide');
+            	if( geBookIsActive ){
+            		geBook.destroy();
+            	}
+                geBook = ePub({
+                	bookPath : pathToBook,
+                	version: 1,
+                	restore: false,
+                	storage: false,
+                	online: false,
+                	spreads: true,
+                	packageUrl: false,
+                	fixedLayout : false,
+                	width : geBookArea.width,
+                	height: geBookArea.height,
+                });
+                geBookIsActive = true;
+
+                $('#browse-books-modal').modal('close');
+                app.geBookRender(geBook);
+            },
+
 	    },
 
         utils = {
@@ -300,14 +382,45 @@ function startApplication () {
 						console.log( 'geBookData saved!' );
 					});
 				}
+			},
 
-
-				/*chrome.storage.sync.set({
-					geBookData: savedData
-				}, function() {
-					console.log( 'geBookData: ', savedData );
-				});*/
+			clearAllData: function (){
+				$('#clear-ge-books-data').on('click', function(){
+					chrome.storage.sync.clear(function() {
+					    var error = chrome.runtime.lastError;
+					    if (error) {
+					        console.error(error);
+					    } else {
+					    	alert('Data cleared!')
+					    }
+					}); 
+				});
 			}
+        },
+
+        api = {
+        	sendGeBook: function (book) {
+	        	$.ajax({
+                    url: 'http://192.241.173.116/projetos/ge-books/process-gebook.php',
+                    // dataType: 'json',
+                    dataType: 'text',
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    data: book,                         
+                    type: 'POST',
+                    /*beforeSend: function(php_script_response){
+                    	
+                    },*/
+                    success: function(response){
+                    	console.log( response );
+                    },
+                    error: function(error){
+                    	console.error( 'Error: ' + error.responseText );
+                    	console.error( 'Full stack: ', error );
+                	}
+                 });
+	        },
         }
 	})(jQuery);
 
